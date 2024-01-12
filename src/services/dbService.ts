@@ -65,7 +65,7 @@ async function executeQuery(query: string, values: any[]): Promise<any> {
 }
 
 export async function getHostnames(): Promise<string[]> {
-	logger.info("getHostnames");
+	// logger.info("getHostnames");
 
 	try {
 		const query = "SELECT DISTINCT(hostname) FROM smartia_logs l WHERE l.hostname <> ''";
@@ -80,7 +80,7 @@ export async function getHostnames(): Promise<string[]> {
 }
 
 export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]> {
-	logger.info("getLogs", data || {});
+	// logger.info("getLogs", data || {});
 
 	try {
 		const _hostnameFilter: string = data?.hostnameFilter?.trim();
@@ -122,7 +122,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 
 		const query = `with data as (select * from smartia_logs l ${queryConditional} order by l.timestamp desc, l.id desc limit 100) select * from data d order by d.timestamp, d.id`;
 
-		logger.info(JSON.stringify({query, values: queryValues}));
+		// logger.info(JSON.stringify({query, values: queryValues}));
 
 		const rows = await executeQuery(query, queryValues) as DbLog[];
 
