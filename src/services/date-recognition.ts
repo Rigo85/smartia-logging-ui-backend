@@ -55,11 +55,11 @@ export class DateRecognition {
 	}
 
 	applyOffset(date: Date, offset: number | undefined) {
-		logger.info(JSON.stringify({date, offset}));
+		// logger.info(JSON.stringify({date, offset}));
 		if (!offset && date) return date;
 		if (!date) return undefined;
 
-		const _offset = offset * 60 * 1000;
+		const _offset = -(offset * 60 * 1000);
 
 		const _currentTime = date.getTime();
 		const _newTime = _currentTime + _offset;
