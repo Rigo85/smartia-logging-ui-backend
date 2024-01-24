@@ -163,6 +163,7 @@ function getUTCDate(date: Date) {
 function getTimestampRange(dateFilter: DateFilter): string[] {
 	if (!dateFilter?.dates || !dateFilter?.dates?.length) return undefined;
 
+	logger.info(JSON.stringify(dateFilter));
 	const dateStr = dateFilter.dates[0].toISOString();
 
 	const date = new Date(dateStr);
