@@ -55,6 +55,7 @@ export class DateRecognition {
 	}
 
 	applyOffset(date: Date, offset: number | undefined) {
+		logger.info(JSON.stringify({date, offset}));
 		if (!offset && date) return date;
 		if (!date) return undefined;
 
