@@ -27,7 +27,7 @@ export class DateRecognition {
 
 	public dateRecognition(query: string, offset: number | undefined): DateFilter | undefined {
 		const results = Recognizers.recognizeDateTime(query, Recognizers.Culture.English);
-		logger.info(JSON.stringify(results));
+		// logger.info(JSON.stringify(results));
 
 		/* eslint-disable @typescript-eslint/naming-convention */
 		const mapper: Record<string, DateTimeResolver | DateTimeRangeResolver> = {
@@ -55,7 +55,6 @@ export class DateRecognition {
 	}
 
 	applyOffset(date: Date, offset: number | undefined) {
-		// logger.info(JSON.stringify({date, offset}));
 		if (!offset && date) return date;
 		if (!date) return undefined;
 
