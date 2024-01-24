@@ -1,5 +1,8 @@
 import Recognizers from "@microsoft/recognizers-text-suite";
 import { DateFilter } from "(src)/services/date-filter";
+import { Logger } from "digevo-logger";
+
+const logger = new Logger("date recognition");
 
 interface DateTimeRange {
 	timex: string;
@@ -24,7 +27,7 @@ export class DateRecognition {
 
 	public dateRecognition(query: string): DateFilter | undefined {
 		const results = Recognizers.recognizeDateTime(query, Recognizers.Culture.English);
-		// console.info(JSON.stringify(results));
+		logger.info(JSON.stringify(results));
 
 		/* eslint-disable @typescript-eslint/naming-convention */
 		const mapper: Record<string, DateTimeResolver | DateTimeRangeResolver> = {
