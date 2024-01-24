@@ -2,6 +2,8 @@ import { Pool } from "pg";
 import * as dotenv from "dotenv";
 
 import { Logger } from "digevo-logger";
+import { DateRecognition } from "(src)/services/date-recognition";
+import { DateFilter } from "(src)/services/date-filter";
 
 dotenv.config({path: ".env"});
 
@@ -18,6 +20,8 @@ const pool = new Pool({
 	// ssl: process.env.NODE_ENV === "production" ? {rejectUnauthorized: false} : false
 	ssl: false
 });
+
+const dr = new DateRecognition();
 
 export interface MessageLog {
 	id: number;
@@ -37,10 +41,10 @@ interface DbLog {
 	appname: string;
 }
 
-interface DateFilter {
-	dates: string[];
-	typeName: string;
-}
+// interface DateFilter {
+// 	dates: string[];
+// 	typeName: string;
+// }
 
 export interface LogFilter {
 	hostnameFilter?: string;
@@ -86,7 +90,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 		const _hostnameFilter: string = data?.hostnameFilter?.trim();
 		const hostnameFilter = (_hostnameFilter || "") === "All Hostnames" ? undefined : _hostnameFilter;
 		const filterInput: string = data?.inputFilter?.trim();
-		const dateFilter: DateFilter = data?.dateFilter;
+		const dateFilter: DateFilter = dr.dateRecognition(data?.queryString ?? "");
 
 		const conditionals: string[] = [];
 		let queryValues: string[] = [];
@@ -159,7 +163,7 @@ function getUTCDate(date: Date) {
 function getTimestampRange(dateFilter: DateFilter): string[] {
 	if (!dateFilter?.dates || !dateFilter?.dates?.length) return undefined;
 
-	const dateStr = dateFilter.dates[0];
+	const dateStr = dateFilter.dates[0].toISOString();
 
 	const date = new Date(dateStr);
 	let startDate, endDate;
