@@ -50,6 +50,7 @@ export interface LogFilter {
 	hostnameFilter?: string;
 	inputFilter?: string;
 	queryString?: string;
+	offset?: number;
 	dateFilter?: DateFilter;
 	direction?: "UP" | "DOWN";
 	startId?: number;
@@ -90,7 +91,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 		const _hostnameFilter: string = data?.hostnameFilter?.trim();
 		const hostnameFilter = (_hostnameFilter || "") === "All Hostnames" ? undefined : _hostnameFilter;
 		const filterInput: string = data?.inputFilter?.trim();
-		const dateFilter: DateFilter = dr.dateRecognition(data?.queryString ?? "");
+		const dateFilter: DateFilter = dr.dateRecognition(data?.queryString ?? "", data?.offset);
 
 		const conditionals: string[] = [];
 		let queryValues: string[] = [];

@@ -25,7 +25,7 @@ export class DateRecognition {
 
 	}
 
-	public dateRecognition(query: string): DateFilter | undefined {
+	public dateRecognition(query: string, offset: number | undefined): DateFilter | undefined {
 		const results = Recognizers.recognizeDateTime(query, Recognizers.Culture.English);
 		logger.info(JSON.stringify(results));
 
@@ -48,7 +48,22 @@ export class DateRecognition {
 		if (!resolver)
 			return undefined;
 
-		return resolver(results[0].resolution["values"], results[0].typeName);
+		const df = resolver(results[0].resolution["values"], results[0].typeName);
+		df.dates = df.dates.map((d: Date) => this.applyOffset(d, offset));
+
+		return df;
+	}
+
+	applyOffset(date: Date, offset: number | undefined) {
+		if (!offset && date) return date;
+		if (!date) return undefined;
+
+		const _offset = offset * 60 * 1000;
+
+		const _currentTime = date.getTime();
+		const _newTime = _currentTime + _offset;
+
+		return new Date(_newTime);
 	}
 
 	private resolveDateTime(resolutionValues: DateTime[], typeName: string): DateFilter {
