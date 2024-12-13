@@ -55,6 +55,7 @@ export interface LogFilter {
 	direction?: "UP" | "DOWN";
 	startId?: number;
 	endId?: number;
+	id?: number;
 }
 
 async function executeQuery(query: string, values: any[]): Promise<any> {
@@ -93,9 +94,16 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 		const filterInput: string = data?.inputFilter?.trim();
 		const dateFilter: DateFilter = dr.dateRecognition(data?.queryString ?? "", data?.offset);
 
+		logger.info(`filterInput: "${filterInput}"`);
+		// Reglas para filterInput:
+		// - 'aaa bbb ccc': devolverá t0do lo que contenga esas 3 cadenas, sin importar el orden dentro del mensaje.
+		// - 'aaa OR bbb': devolverá t0odo lo que contenga 'aaa' o 'bbb' o ambos.
+		// - '"connection timed out"': buscará la frase exacta entre comillas, lo tomará como un t0do.
+		// - 'aaa bbb -ccc': devolverá t0do lo que contenga 'aaa' y 'bbb' pero no 'ccc'.
+
 		const conditionals: string[] = [];
-		let queryValues: string[] = [];
-		const inputValues: { input: string; condition: () => string; value: string | string[] }[] = [
+		let queryValues: any[] = [];
+		const inputValues: { input: string; condition: () => string; value: string | string[] | number }[] = [
 			{
 				input: hostnameFilter,
 				condition: () => `hostname = $${conditionals.length + 1}`,
@@ -110,6 +118,11 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 				input: dateFilter?.dates ? "dateFilter" : undefined,
 				condition: () => `timestamp >= $${conditionals.length + 1} and timestamp < $${conditionals.length + 2}`,
 				value: getTimestampRange(dateFilter)
+			},
+			{
+				input: data?.id ? `${data?.id}` : undefined,
+				condition: () => `id < $${conditionals.length + 1}`,
+				value: data?.id
 			}
 		];
 
@@ -125,7 +138,12 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 			queryConditional = `where ${conditionals.join(" and ")}`;
 		}
 
-		const query = `with data as (select * from smartia_logs l ${queryConditional} order by l.timestamp desc, l.id desc limit 100) select * from data d order by d.timestamp, d.id`;
+		const query = `
+            with data as (select * from smartia_logs l ${queryConditional}
+            order by l.timestamp desc, l.id desc limit 100)
+            select *
+            from data d
+            order by d.timestamp, d.id`;
 
 		// logger.info(JSON.stringify({query, values: queryValues}));
 
@@ -193,7 +211,7 @@ function getTimestampRange(dateFilter: DateFilter): string[] {
 		endDate = new Date(date.getTime() + 1000); // Añadir un segundo
 	}
 
-	// Formatear las fechas para PostgreSQL
+	// Formatear las fechas para PostgresSQL
 	const startStr = startDate.toISOString();
 	const endStr = endDate.toISOString();
 

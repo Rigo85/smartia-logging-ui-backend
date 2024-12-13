@@ -8,7 +8,7 @@ const logger = new Logger("Log Service");
 async function onUpdateEvent(ws: WebSocket, messageObj: any) {
 	try {
 		const logs = await getLogs(messageObj);
-		const message = {event: "update", data: {logs}};
+		const message = {event: messageObj?.data?.id ? "update-olders" : "update", data: {logs}};
 		sendMessage(ws, message);
 	} catch (error) {
 		logger.error("onUpdateEvent", error);
@@ -38,6 +38,10 @@ export function onMessageEvent(message: any, ws: WebSocket) {
 
 	const eventHandlers: Record<string, () => Promise<void>> = {
 		"update": async () => {
+			await onUpdateEvent(ws, messageObj);
+		},
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		"update-olders": async () => {
 			await onUpdateEvent(ws, messageObj);
 		},
 		// eslint-disable-next-line @typescript-eslint/naming-convention
