@@ -8,7 +8,7 @@ moduleAlias.addAliases({
 import { Request, Response, NextFunction } from "express";
 import errorHandler from "errorhandler";
 
-import { Logger } from "digevo-logger";
+import { Logger } from "(src)/helpers/Logger";
 
 import { WSServer } from "(src)/WSServer";
 import { app } from "./app";

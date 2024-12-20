@@ -2,7 +2,7 @@ import { Express } from "express";
 import { Server, WebSocket } from "ws";
 import http from "http";
 
-import { Logger } from "digevo-logger";
+import { Logger } from "(src)/helpers/Logger";
 import { onMessageEvent } from "(src)/services/logService";
 
 const logger = new Logger("WS Server");

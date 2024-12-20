@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 
-import { Logger } from "digevo-logger";
-import { getHostnames, getLogs } from "(src)/services/dbService";
+import { Logger } from "(src)/helpers/Logger";
+import { getLogs } from "(src)/services/SolrQuery/solrQuery";
 
 const logger = new Logger("Log Service");
 
@@ -15,15 +15,15 @@ async function onUpdateEvent(ws: WebSocket, messageObj: any) {
 	}
 }
 
-async function onUpdateHostnames(ws: WebSocket) {
-	try {
-		const hostnames = await getHostnames();
-		const message = {event: "hostnames", data: {hostnames}};
-		sendMessage(ws, message);
-	} catch (error) {
-		logger.error("onUpdateHostnames", error);
-	}
-}
+// async function onUpdateHostnames(ws: WebSocket) {
+// 	try {
+// 		const hostnames = await getHostnames();
+// 		const message = {event: "hostnames", data: {hostnames}};
+// 		sendMessage(ws, message);
+// 	} catch (error) {
+// 		logger.error("onUpdateHostnames", error);
+// 	}
+// }
 
 export function onMessageEvent(message: any, ws: WebSocket) {
 	let messageObj: any;
@@ -45,9 +45,9 @@ export function onMessageEvent(message: any, ws: WebSocket) {
 			await onUpdateEvent(ws, messageObj);
 		},
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"update-hostnames": async () => {
-			await onUpdateHostnames(ws);
-		},
+		// "update-hostnames": async () => {
+		// 	await onUpdateHostnames(ws);
+		// },
 		"default": async () => {
 			ws.send("{\"event\":\"errors\", \"data\": {\"errors\":[\"An error has occurred. Invalid event kind.\"]}}");
 		}

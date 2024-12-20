@@ -1,24 +1,15 @@
 import Recognizers from "@microsoft/recognizers-text-suite";
-import { DateFilter } from "(src)/services/date-filter";
-import { Logger } from "digevo-logger";
 
-const logger = new Logger("date recognition");
+import {
+	DateFilter,
+	DateTime,
+	DateTimeRange,
+	DateTimeRangeResolver,
+	DateTimeResolver
+} from "(src)/helpers/headers";
+// import { Logger } from "(src)/helpers/Logger";
 
-interface DateTimeRange {
-	timex: string;
-	type: string;
-	start: string;
-	end: string;
-}
-
-interface DateTime {
-	timex: string;
-	type: string;
-	value: string;
-}
-
-type DateTimeResolver = (resolutionValues: DateTime[], typeName: string) => DateFilter;
-type DateTimeRangeResolver = (resolutionValues: DateTimeRange[], typeName: string) => DateFilter;
+// const logger = new Logger("date recognition");
 
 export class DateRecognition {
 	constructor() {
