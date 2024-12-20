@@ -40,7 +40,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 		}
 
 		logger.info(`filterInput: "${input}" dateFilter: "${JSON.stringify(dateFilter)}" hostnameFilter: "${_hostnameFilter}" input: "${input}"`);
-		const {query, filters} = parseSearchExpression(input);
+		const {query, filters} = input ? parseSearchExpression(input) : {query: [], filters: []};
 
 		if (data?.id) {
 			filters.push(`id:[* TO ${data.id}]`);
