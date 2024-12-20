@@ -24,38 +24,42 @@ const dr = new DateRecognition();
 export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]> {
 	// logger.info("getLogs", data || {});
 
-	let input = "";
 	try {
+		let input = data?.inputFilter?.trim() || "";
+
 		const _hostnameFilter: string = data?.hostnameFilter?.trim() || "";
 		if (_hostnameFilter && _hostnameFilter !== "All Hostnames") {
-			input = `hostname:${_hostnameFilter}`;
-		}
-
-		const filterInput: string = data?.inputFilter?.trim();
-		if (filterInput) {
-			input = input ? `${input} ${filterInput}` : filterInput;
+			input = input ? `${input} hostname:${_hostnameFilter}` : `hostname:${_hostnameFilter}`;
 		}
 
 		const dateFilter: DateFilter = dr.dateRecognition(data?.queryString ?? "", data?.offset);
-		if (dateFilter?.dates.length > 1) {
+		if (dateFilter?.dates.length) {
 			const [startRange, endRange] = getTimestampRange(dateFilter);
 			const timeRange = `timestamp:"[${startRange} TO ${endRange}]"`;
-			input = input ? `${input} timestamp:"${timeRange}"` : `timestamp:"${timeRange}"`;
+			input = input ? `${input} ${timeRange}` : `${timeRange}`;
 		}
 
-		logger.info(`filterInput: "${filterInput}" dateFilter: "${JSON.stringify(dateFilter)}" hostnameFilter: "${_hostnameFilter}" input: "${input}"`);
+		logger.info(`filterInput: "${input}" dateFilter: "${JSON.stringify(dateFilter)}" hostnameFilter: "${_hostnameFilter}" input: "${input}"`);
 		const {query, filters} = parseSearchExpression(input);
 
-		const resultados = await searchSolr(query, filters, 0, 20);
+		if (data?.id) {
+			filters.push(`id:[* TO ${data.id}]`);
+		}
+
+		if (!query.length) {
+			query.push("data_exact:*");
+		}
+
+		const resultados = await searchSolr(query, filters, 0, 100);
 
 		return resultados.map((log: LogDocument) => ({
 			id: parseInt(log.id, 10),
-			dateTime: getUTCDate(new Date(log.timestamp)),
+			dateTime: new Date(log.timestamp).toISOString(),
 			data: log.data,
 			source: log.source,
 			hostname: log.hostname,
 			appName: log.appname
-		}));
+		})).reverse();
 	} catch (error) {
 		logger.error("getLogs", error);
 
@@ -70,7 +74,7 @@ async function searchSolr(query: string[], filters: string[], start: number = 0,
 			fq: filters.join(" AND "),
 			rows: limit,
 			wt: "json",
-			sort: "timestamp desc"
+			sort: "timestamp desc, id desc"
 		};
 
 		logger.info("Enviando consulta a Solr con params:", JSON.stringify(params));
@@ -94,8 +98,6 @@ async function searchSolr(query: string[], filters: string[], start: number = 0,
 		return [];
 	}
 }
-
-
 
 
 //

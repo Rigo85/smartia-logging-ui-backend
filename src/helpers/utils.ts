@@ -42,8 +42,8 @@ export function getTimestampRange(dateFilter: DateFilter): string[] {
 	}
 
 	// Formatear las fechas para PostgresSQL
-	const startStr = startDate.toISOString();
-	const endStr = endDate.toISOString();
+	const startStr = startDate.toISOString().split(".")[0] + "Z";
+	const endStr = endDate.toISOString().split(".")[0] + "Z";
 
 	return [startStr, endStr];
 }

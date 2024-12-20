@@ -46,8 +46,7 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			this.searchData.query.push(result);
 			return result;
 		} else if (ctx.WORD()) {
-			console.info(`SEARCH PRIMARY: ${ctx.WORD()?.text}`);
-			result = `${ctx.NOT() ? "-data_exact:" : "data_exact:"}${ctx.WORD()?.text}`;
+			result = `${ctx.NOT() ? "-data_exact:" : "data_exact:"}${escapeSolrQuery(ctx.WORD()?.text)}`;
 			this.searchData.query.push(result);
 			return result;
 		} else if (ctx.LPAREN()) {
@@ -65,9 +64,9 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			result = `${fieldName}:(${this.visit(ctx.expression() as ParseTree)})`;
 		} else if (ctx.PHRASE()) {
 			const phrase = ctx.PHRASE()?.text.replace(/"(.+)"|'(.+)'/, "$1$2") ?? "";
-			result = `${fieldName}:${escapeSolrQuery(phrase)}`;
+			result = `${fieldName}:${fieldName === "timestamp" ? phrase : escapeSolrQuery(phrase)}`;
 		} else if (ctx.WORD()) {
-			result = `${fieldName}:${ctx.WORD()?.text}`;
+			result = `${fieldName}:${escapeSolrQuery(ctx.WORD()?.text)}`;
 		} else {
 			console.warn(`Invalid FieldSearch: ${fieldName} - ${ctx.text}`);
 		}
@@ -106,7 +105,7 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			const phrase = ctx.PHRASE()?.text.replace(/"(.+)"|'(.+)'/, "$1$2");
 			return phrase ? escapeSolrQuery(phrase) : phrase;
 		} else if (ctx.WORD()) {
-			return ctx.WORD()?.text;
+			return escapeSolrQuery(ctx.WORD()?.text);
 		} else {
 			console.info(`PRIMARY: ${ctx.text}`);
 		}
