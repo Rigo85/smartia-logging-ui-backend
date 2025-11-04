@@ -9,7 +9,7 @@ export function getUTCDate(date: Date) {
 		String(date.getSeconds()).padStart(2, "0") + "Z";
 }
 
-export function getTimestampRange(dateFilter: DateFilter): string[] {
+export function getTimestampRange(dateFilter: DateFilter): number[] {
 	if (!dateFilter?.dates || !dateFilter?.dates?.length) return undefined;
 
 	// logger.info(JSON.stringify(dateFilter));
@@ -41,9 +41,10 @@ export function getTimestampRange(dateFilter: DateFilter): string[] {
 		endDate = new Date(date.getTime() + 1000); // Añadir un segundo
 	}
 
-	// Formatear las fechas para PostgresSQL
-	const startStr = startDate.toISOString().split(".")[0] + "Z";
-	const endStr = endDate.toISOString().split(".")[0] + "Z";
+	// const startStr = startDate.toISOString().split(".")[0] + "Z";
+	// const endStr = endDate.toISOString().split(".")[0] + "Z";
+	const startStr = startDate.getTime();
+	const endStr = endDate.getTime();
 
 	return [startStr, endStr];
 }
