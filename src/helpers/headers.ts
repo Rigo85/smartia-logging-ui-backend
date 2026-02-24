@@ -52,6 +52,7 @@ export type DateTimeRangeResolver = (resolutionValues: DateTimeRange[], typeName
 
 export interface MessageLog {
 	id: number;
+	fragmentId: string;
 	dateTime: string;
 	data: string;
 	source: string;

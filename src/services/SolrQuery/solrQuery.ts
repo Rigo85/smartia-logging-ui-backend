@@ -54,6 +54,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 
 		return resultados.map((log: LogDocument) => ({
 			id: parseInt(log.id, 10),
+			fragmentId: log.id,
 			dateTime: new Date(log.timestamp).toISOString(),
 			data: log.data,
 			source: log.source,
