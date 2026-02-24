@@ -42,7 +42,9 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			return this.visit(ctx.fieldSearch() as ParseTree);
 		} else if (ctx.PHRASE()) {
 			const phrase = ctx.PHRASE()?.text.replace(/"(.+)"|'(.+)'/, "$1$2") ?? "";
-			result = `${ctx.NOT() ? "-data_exact:" : "data_exact:"}${escapeSolrQuery(phrase)}`;
+			// data_exact es StrField (sin tokenizador): las phrase queries no funcionan ahí.
+			// Usamos el campo 'data' (text_general, tokenizado) para phrase matching correcto.
+			result = `${ctx.NOT() ? "-data:" : "data:"}("${phrase.replace(/"/g, '\\"')}")`;
 			this.searchData.query.push(result);
 			return result;
 		} else if (ctx.WORD()) {
@@ -64,7 +66,7 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			result = `${fieldName}:(${this.visit(ctx.expression() as ParseTree)})`;
 		} else if (ctx.PHRASE()) {
 			const phrase = ctx.PHRASE()?.text.replace(/"(.+)"|'(.+)'/, "$1$2") ?? "";
-			result = `${fieldName}:${fieldName === "timestamp" ? phrase : escapeSolrQuery(phrase)}`;
+			result = `${fieldName}:${fieldName === "timestamp" ? phrase : `("${phrase.replace(/"/g, '\\"')}")`}`;
 		} else if (ctx.WORD()) {
 			result = `${fieldName}:${escapeSolrQuery(ctx.WORD()?.text)}`;
 		} else {

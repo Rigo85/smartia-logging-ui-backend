@@ -70,7 +70,7 @@ export async function getLogs({data}: { data: LogFilter }): Promise<MessageLog[]
 async function searchSolr(query: string[], filters: string[], start: number = 0, limit: number = 10): Promise<LogDocument[]> {
 	try {
 		const params: Record<string, any> = {
-			q: query.join(" OR "),
+			q: query.join(" AND "),
 			fq: filters.join(" AND "),
 			rows: limit,
 			wt: "json",

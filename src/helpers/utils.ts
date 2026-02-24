@@ -12,41 +12,38 @@ export function getUTCDate(date: Date) {
 export function getTimestampRange(dateFilter: DateFilter): number[] {
 	if (!dateFilter?.dates || !dateFilter?.dates?.length) return undefined;
 
-	// logger.info(JSON.stringify(dateFilter));
-	const dateStr = dateFilter.dates[0].toISOString();
+	const typeName = dateFilter.typeName;
 
-	const date = new Date(dateStr);
-	let startDate, endDate;
-
-	// Determinar el rango de tiempo basado en los componentes de la fecha
-	if (date.getUTCSeconds() === 0) {
-		if (date.getUTCMinutes() === 0) {
-			if (date.getUTCHours() === 0 && ["datetimeV2.date", "datetimeV2.daterange"].includes(dateFilter.typeName)) {
-				// Rango de _todo el día
-				startDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-				endDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1));
-			} else {
-				// Rango de toda la hora
-				startDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours()));
-				endDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours() + 1));
-			}
-		} else {
-			// Rango de todo el minuto
-			startDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes()));
-			endDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes() + 1));
-		}
-	} else {
-		// Exactamente el segundo específico
-		startDate = date;
-		endDate = new Date(date.getTime() + 1000); // Añadir un segundo
+	// Rangos explícitos (daterange, datetimerange, timerange): el resolver ya devolvió
+	// dos fechas [start, end], ambas con el offset del cliente aplicado. Usarlas directamente.
+	if (dateFilter.dates.length >= 2) {
+		return [dateFilter.dates[0].getTime(), dateFilter.dates[1].getTime()];
 	}
 
-	// const startStr = startDate.toISOString().split(".")[0] + "Z";
-	// const endStr = endDate.toISOString().split(".")[0] + "Z";
-	const startStr = startDate.getTime();
-	const endStr = endDate.getTime();
+	// Punto único en el tiempo: inferir granularidad del rango
+	const date = new Date(dateFilter.dates[0].toISOString());
 
-	return [startStr, endStr];
+	if (["datetimeV2.date", "datetimeV2.daterange"].includes(typeName)) {
+		// El offset ya fue aplicado: dates[0] representa la medianoche local en UTC.
+		// El rango es exactamente 24h a partir de ahí.
+		return [date.getTime(), date.getTime() + 24 * 60 * 60 * 1000];
+	}
+
+	if (date.getUTCSeconds() === 0) {
+		if (date.getUTCMinutes() === 0) {
+			// Rango de toda la hora
+			const startDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours()));
+			const endDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours() + 1));
+			return [startDate.getTime(), endDate.getTime()];
+		}
+		// Rango de todo el minuto
+		const startDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes()));
+		const endDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes() + 1));
+		return [startDate.getTime(), endDate.getTime()];
+	}
+
+	// Exactamente el segundo específico
+	return [date.getTime(), date.getTime() + 1000];
 }
 
 export function escapeSolrQuery(query: string): string {

@@ -46,8 +46,8 @@ export class DateRecognition {
 	}
 
 	applyOffset(date: Date, offset: number | undefined) {
-		if (!offset && date) return date;
 		if (!date) return undefined;
+		if (offset === undefined || offset === null) return date;
 
 		const _offset = -(offset * 60 * 1000);
 
