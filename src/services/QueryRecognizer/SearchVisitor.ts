@@ -66,7 +66,16 @@ export class SearchVisitor implements QueryRecognizerVisitor<any> {
 			result = `${fieldName}:(${this.visit(ctx.expression() as ParseTree)})`;
 		} else if (ctx.PHRASE()) {
 			const phrase = ctx.PHRASE()?.text.replace(/"(.+)"|'(.+)'/, "$1$2") ?? "";
-			result = `${fieldName}:${fieldName === "timestamp" ? phrase : `("${phrase.replace(/"/g, '\\"')}")`}`;
+			if (fieldName === "timestamp") {
+				result = `${fieldName}:${phrase}`;
+			} else if (fieldName === "data_exact" || fieldName === "-data_exact") {
+				// data_exact es StrField: las phrase queries no tienen posiciones de tokens.
+				// Redirigir al campo 'data' (text_general, tokenizado) para phrase matching.
+				const prefix = fieldName.startsWith("-") ? "-data" : "data";
+				result = `${prefix}:("${phrase.replace(/"/g, '\\"')}")`;
+			} else {
+				result = `${fieldName}:("${phrase.replace(/"/g, '\\"')}")`;
+			}
 		} else if (ctx.WORD()) {
 			result = `${fieldName}:${escapeSolrQuery(ctx.WORD()?.text)}`;
 		} else {
